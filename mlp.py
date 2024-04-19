@@ -1,5 +1,5 @@
-from rmad import *
-from random import random
+from tensor import Tensor 
+from random import random 
 
 class Neuron:
     def __init__(self, input_size, activation_function):
@@ -14,8 +14,9 @@ class Neuron:
     def __call__(self, x):
         return self.forward(x)
 
-    def parameters():
-        pass
+    def parameters(self):
+        return [weight.grad for weight in self.weights] + [self.bias.grad]
+
 class Layer:
     def __init__(self, input_size, output_size, activation_function):
         self.neurons = [Neuron(input_size, activation_function) for _ in range(output_size)]
@@ -26,10 +27,11 @@ class Layer:
 
     def __call__(self, x):
         return self.forward(x)
+
 class MLP:
-    def __init__(self, input_size, layer_sizes, activation_function = Tensor.ActivationFunctions.relu):
+    def __init__(self, input_size, layer_sizes, activation_functions):
         layers_total = [input_size] + layer_sizes
-        self.layers = [Layer(layers_total[i], layers_total[i+1], activation_function) for i in range(len(layer_sizes))]
+        self.layers = [Layer(layers_total[i], layers_total[i+1], j) for i, j in zip(range(len(layer_sizes)), activation_functions)]
 
     def forward(self, x):
         for layer in self.layers:
@@ -39,23 +41,5 @@ class MLP:
     def __call__(self, x):
         return self.forward(x)
 
-    def parameters():
-        pass
-
-class Optimizer:
-    def __init__(self, model: MLP, learning_rate: float):
-        self.model = model
-        self.learning_rate = learning_rate
-    def step(self, loss: Tensor):
-        calcGradients(loss)
-        for layer in self.model.layers:
-            for neuron in layer.neurons:
-                for weight in neuron.weights:
-                    weight.value -= self.learning_rate * weight.grad
-                neuron.bias.value -= self.learning_rate * neuron.bias.grad
-    def zero_grad(self):
-        for layer in self.model.layers:
-            for neuron in layer.neurons:
-                for weight in neuron.weights:
-                    weight.grad = 0
-                neuron.bias.grad = 0
+    def parameters(self):
+        return [[neuron.parameters() for neuron in layer.neurons] for layer in self.layers]
