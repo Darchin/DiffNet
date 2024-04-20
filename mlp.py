@@ -15,7 +15,7 @@ class Neuron:
         return self.forward(x)
 
     def parameters(self):
-        return [weight.grad for weight in self.weights] + [self.bias.grad]
+        return self.weights + [self.bias.grad]
 
 class Layer:
     def __init__(self, input_size, output_size, activation_function):
@@ -27,6 +27,9 @@ class Layer:
 
     def __call__(self, x):
         return self.forward(x)
+
+    def parameters(self): 
+        return [neuron.parameters() for neuron in self.neurons]
 
 class MLP:
     def __init__(self, input_size, layer_sizes, activation_functions):
@@ -42,4 +45,4 @@ class MLP:
         return self.forward(x)
 
     def parameters(self):
-        return [[neuron.parameters() for neuron in layer.neurons] for layer in self.layers]
+        return [layer.parameters() for layer in self.layers]
