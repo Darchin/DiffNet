@@ -135,15 +135,15 @@ class Tensor:
         def _topo_sort(v: Tensor):
             if v not in visited:
                 visited.add(v)
-            for c in v.children:
-                _topo_sort(c)
-            stack.append(v)
+                for c in v.children:
+                    _topo_sort(c)
+                stack.append(v)
         _topo_sort(self)
-        return stack 
+        return reversed(stack)
 
     def backward(self):
         "Do a reverse pass of the computation graph, calculating gradients along the way."
         stack = self.topo_sort()
         self.grad = 1
-        for tensor in reversed(stack):
+        for tensor in stack:
             tensor._backward()
